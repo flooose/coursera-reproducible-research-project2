@@ -79,14 +79,17 @@ consideration here because no financial information in these respects
 was included in the dataset, making any attempt to include the "human"
 element of the economic consequences purlely speculative.
 
-Only keep rows where `CROPDMG > 0` or `PROPDMG > 0`
+We only keep rows where `CROPDMG > 0` or `PROPDMG > 0`
 
 
 ```r
 economicData <- filter(economicData, CROPDMG > 0 | PROPDMG > 0)
 ```
 
-Now manually clean up `EVTYPE`s that _obviously_ belong together
+Now manually merge (to the extent possible) `EVTYPE`s that are not
+listed
+[here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
+with good matches that are.
 
 
 ```r
@@ -107,11 +110,9 @@ economicData[grep('STORM.*SURGE', economicData$EVTYPE, ignore.case = T),]$EVTYPE
 ```
 
 All events occuring more than 1000 times are now officially recognized
-event categories, as outlined
-[here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
-in section 2.1.1 "Storm Data Event Table". This is approximately 98%
-of all recorded events and will be considered a sufficient base for
-the rest of this analysis.
+event categories, as outlined in the document mentioned above. This
+is approximately 98% of all recorded events and will be considered a
+sufficient base for the rest of this analysis.
 
 
 ```r

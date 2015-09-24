@@ -26,9 +26,9 @@ deathsAndInjuries &lt;-<span class="st"> </span><span class="kw">arrange</span>(
 <p>First we collect the subsets of columns related to the economic impact of events, namely crop and property damage.</p>
 <pre class="sourceCode r"><code class="sourceCode r">economicData &lt;-<span class="st"> </span><span class="kw">select</span>(weatherData, EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP)</code></pre>
 <p>While the impact on the human population from Question 1 certainly also has economic consequences, they will not be taken into consideration here because no financial information in these respects was included in the dataset, making any attempt to include the &quot;human&quot; element of the economic consequences purlely speculative.</p>
-<p>Only keep rows where <code>CROPDMG &gt; 0</code> or <code>PROPDMG &gt; 0</code></p>
+<p>We only keep rows where <code>CROPDMG &gt; 0</code> or <code>PROPDMG &gt; 0</code></p>
 <pre class="sourceCode r"><code class="sourceCode r">economicData &lt;-<span class="st"> </span><span class="kw">filter</span>(economicData, CROPDMG &gt;<span class="st"> </span><span class="dv">0</span> |<span class="st"> </span>PROPDMG &gt;<span class="st"> </span><span class="dv">0</span>)</code></pre>
-<p>Now manually clean up <code>EVTYPE</code>s that <em>obviously</em> belong together</p>
+<p>Now manually merge (to the extent possible) <code>EVTYPE</code>s that are not listed <a href="https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf">here</a> with good matches that are.</p>
 <pre class="sourceCode r"><code class="sourceCode r">economicData[<span class="kw">grep</span>(<span class="st">&#39;tstm.*wind|thunderstorm.*wind&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;THUNDERSTORM WIND&#39;</span>
 economicData[<span class="kw">grep</span>(<span class="st">&#39;FLASH.*FLOOD&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;FLASH FLOOD&#39;</span>
 economicData[<span class="kw">grep</span>(<span class="st">&#39;URBAN.*FLOOD|^FLOODING$|RIVER.*FLOOD&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;FLOOD&#39;</span>
@@ -43,7 +43,7 @@ economicData[<span class="kw">grep</span>(<span class="st">&#39;HEAVY.*RAIN&#39;
 economicData[<span class="kw">grep</span>(<span class="st">&#39;EXCESSIVE.*SNOW&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;HEAVY SNOW&#39;</span>
 economicData[<span class="kw">grep</span>(<span class="st">&#39;EXTREME.*COLD&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;EXTREME COLD&#39;</span>
 economicData[<span class="kw">grep</span>(<span class="st">&#39;STORM.*SURGE&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;STORM SURGE/TIDE&#39;</span></code></pre>
-<p>All events occuring more than 1000 times are now officially recognized event categories, as outlined <a href="https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf">here</a> in section 2.1.1 &quot;Storm Data Event Table&quot;. This is approximately 98% of all recorded events and will be considered a sufficient base for the rest of this analysis.</p>
+<p>All events occuring more than 1000 times are now officially recognized event categories, as outlined in the document mentioned above. This is approximately 98% of all recorded events and will be considered a sufficient base for the rest of this analysis.</p>
 <pre class="sourceCode r"><code class="sourceCode r">evCounts &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">table</span>(economicData$EVTYPE))
 evCounts &lt;-<span class="st"> </span><span class="kw">arrange</span>(evCounts, <span class="kw">desc</span>(Freq))
 eventsOccurringMoreThan1000Times &lt;-<span class="st"> </span><span class="kw">sum</span>(evCounts$Freq[evCounts$Freq &gt;<span class="st"> </span><span class="dv">1000</span>])
