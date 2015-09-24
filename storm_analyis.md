@@ -79,7 +79,51 @@ consideration here because no financial information in these respects
 was included in the dataset, making any attempt to include the "human"
 element of the economic consequences purlely speculative.
 
-Dealing with factor levels in `propertyData$CROPDMGEXP` and `propertyData$CROPDMGEXP`:
+Only keep rows where `CROPDMG > 0` or `PROPDMG > 0`
+
+
+```r
+propertyData <- filter(propertyData, CROPDMG > 0 | PROPDMG > 0)
+```
+
+Now manually clean up `EVTYPE`s that _obviously_ belong together
+
+
+```r
+propertyData[grep('tstm.*wind|thunderstorm.*wind', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'THUNDERSTORM WIND'
+propertyData[grep('FLASH.*FLOOD', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'FLASH FLOOD'
+propertyData[grep('URBAN.*FLOOD|^FLOODING$|RIVER.*FLOOD', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'FLOOD'
+propertyData[grep('HURRICANE', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'HURRICANE'
+propertyData[grep('HIGH.*WIND|^WIND$STRONG.*WIND', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'HIGH WIND'
+propertyData[grep('WILD.*FIRE', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'WILDFIRE'
+propertyData[grep('WINTER.*WEATHER|LIGHT SNOW', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'WINTER WEATHER'
+propertyData[grep('FOG', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'DENSE FOG'
+propertyData[grep('COASTAL.*FLOOD', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'COASTAL FLOOD'
+propertyData[grep('HEAVY.*SURF', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'HIGH SURF'
+propertyData[grep('HEAVY.*RAIN', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'HEAVY RAIN'
+propertyData[grep('EXCESSIVE.*SNOW', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'HEAVY SNOW'
+propertyData[grep('EXTREME.*COLD', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'EXTREME COLD'
+propertyData[grep('STORM.*SURGE', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'STORM SURGE/TIDE'
+```
+
+Now approximately 98% of the data have been assigned to a proper
+category outlined in
+[here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
+in section 2.1.1 "Storm Data Event Table"
+
+
+```r
+evCounts <- as.data.frame(table(propertyData$EVTYPE))
+evCounts <- arrange(evCounts, desc(Freq))
+eventsOccurringMoreThan1000Times <- sum(evCounts$Freq[evCounts$Freq > 1000])
+eventsOccurringMoreThan1000Times/nrow(propertyData)
+```
+
+```
+## [1] 0.9765377
+```
+
+Creating economic values from `CROPDMG`, `CROPDMGEXP`, `PROPDMG` and `PROPDMGEXP`:
 
 
 ```r
@@ -99,70 +143,59 @@ levels(propertyData$CROPDMGEXP)
 ## [1] ""  "0" "2" "?" "B" "K" "M" "k" "m"
 ```
 
-according to
+How to interpret the factor levels was done with the complementary
+[NOAA document](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
+and the help of
 [this site](https://rstudio-pubs-static.s3.amazonaws.com/58957_37b6723ee52b455990e149edde45e5b6.html)
-the factor levels above can be cleaned up by uppercasing any lowercase
-variables, making numbers 1-8 multipliers of ten (i.e a value of 1
-multiplies the value in the corresponding DMG column by 10, just like
-a value of 3, or 4, or etc.), the value `+` multiply by 1 and the
-values `-` and `?` multiply by 0.
-
-Only keep rows where `CROPDMG > 0` or `PROPDMG > 0`
+where we see how the factor levels not addressed in the NOAA document
+can be interpreted. Basically values with numbers 1-8 are multipliers of ten
+(i.e a value of 1 multiplies the value in the corresponding DMG column
+by 10, just like a value of 3, or 4, or etc.). The value `+` multiplies
+by 1 and the values `-` and `?` multiply by 0.
 
 
 ```r
-propertyData <- filter(propertyData, CROPDMG > 0 | PROPDMG > 0)
-```
+multiplierFor <- function(type){
+    type <- as.character(type)
+    if(grepl('[a-zA-Z]', type)) type <- tolower(type)
+    switch(type,
+           '0' = 10,
+           '1' = 10,
+           '2' = 10,
+           '3' = 10,
+           '4' = 10,
+           '5' = 10,
+           '6' = 10,
+           '7' = 10,
+           '8' = 10,
+           '-' = 0,
+           '?' = 10,
+           '+' = 1,
+           'h' = 100,
+           'k' = 1000,
+           'm' = 1000000,
+           'b' = 1000000000,
+           0)
+}
 
-Now manually clean up `EVTYPE`s that _obviously_ belong together
-
-
-```r
-propertyData[grep('tstm.*wind|thunderstorm.*wind', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'THUNDERSTORM WIND'
-propertyData[grep('FLASH.*FLOOD', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'FLASH FLOOD'
-propertyData[grep('URBAN.*FLOOD|^FLOODING$RIVER.*FLOOD', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'FLOOD'
-propertyData[grep('HURRICANE', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'HURRICANE'
-propertyData[grep('HIGH.*WIND|^WIND$STRONG.*WIND', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'HIGH WIND'
-propertyData[grep('WILD.*FIRE', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'WILDFIRE'
-propertyData[grep('WINTER.*WEATHER|LIGHT SNOW', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'WINTER WEATHER'
-propertyData[grep('FOG', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'DENSE FOG'
-propertyData[grep('COASTAL.*FLOOD', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'COASTAL FLOOD'
-propertyData[grep('HEAVY.*SURF', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'HIGH SURF'
-propertyData[grep('HEAVY.*RAIN', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'HEAVY RAIN'
-propertyData[grep('EXCESSIVE.*SNOW', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'HEAVY SNOW'
-propertyData[grep('EXTREME.*COLD', propertyData$EVTYPE, ignore.case = T),]$EVTYPE <- 'EXTREME COLD'
-```
-
-Now over approximately 98% of the data have been assigned to a proper
-category outlined in
-[here](file:///home/chris/Coursera/Reproducible%20Research/project2/repdata-peer2_doc-pd01016005curr.pdf)
-in section 2.1.1 "Storm Data Event Table"
-
-
-```r
-evCounts <- as.data.frame(table(propertyData$EVTYPE))
-evCounts <- arrange(evCounts, desc(Freq))
-sum(evCounts$Freq[evCounts$Freq > 1000])
+propertyData <- propertyData %>% rowwise() %>% mutate(monetaryDamage = PROPDMG*multiplierFor(PROPDMGEXP) + CROPDMG*multiplierFor(CROPDMGEXP))
 ```
 
 ```
-## [1] 239100
+## Error in eval(expr, envir, enclos): object 'propertyData' not found
 ```
 
 ```r
-nrow(propertyData)
+aggregatedDamages <- aggregate(propertyData$monetaryDamage, list(propertyData$EVTYPE), sum)
 ```
 
 ```
-## [1] 245031
+## Error in aggregate(propertyData$monetaryDamage, list(propertyData$EVTYPE), : object 'propertyData' not found
 ```
 
 ```r
-239100/245031
-```
-
-```
-## [1] 0.9757949
+colnames(aggregatedDamages) <- c('EVTYPE', 'monetaryValue')
+aggregatedDamages <- arrange(aggregatedDamages, desc(monetaryValue))
 ```
 
 ## Results
