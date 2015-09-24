@@ -153,4 +153,11 @@ aggregatedDamages <- arrange(aggregatedDamages, desc(monetaryValue))
 
 ## Results
 
+```{r}
+#g <- ggplot(aggregatedDamages[c(1:20),], aes(monetaryValue,EVTYPE,group=1))
+g <- ggplot(aggregatedDamages[c(1:29),], aes(EVTYPE, monetaryValue,group=1))
+g + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+g + geom_point()
+```
+
 ##
