@@ -24,36 +24,36 @@ deathsAndInjuries &lt;-<span class="st"> </span><span class="kw">arrange</span>(
 <p>By combining the injuries with the fatalities of the data, we see that tornadoes are clearly the most harmful to weather events in the data set.</p>
 <h3 id="question-2-economic-consequences">Question 2: Economic Consequences</h3>
 <p>First we collect the subsets of columns related to the economic impact of events, namely crop and property damage.</p>
-<pre class="sourceCode r"><code class="sourceCode r">propertyData &lt;-<span class="st"> </span><span class="kw">select</span>(weatherData, EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">economicData &lt;-<span class="st"> </span><span class="kw">select</span>(weatherData, EVTYPE, PROPDMG, PROPDMGEXP, CROPDMG, CROPDMGEXP)</code></pre>
 <p>While the impact on the human population from Question 1 certainly also has economic consequences, they will not be taken into consideration here because no financial information in these respects was included in the dataset, making any attempt to include the &quot;human&quot; element of the economic consequences purlely speculative.</p>
 <p>Only keep rows where <code>CROPDMG &gt; 0</code> or <code>PROPDMG &gt; 0</code></p>
-<pre class="sourceCode r"><code class="sourceCode r">propertyData &lt;-<span class="st"> </span><span class="kw">filter</span>(propertyData, CROPDMG &gt;<span class="st"> </span><span class="dv">0</span> |<span class="st"> </span>PROPDMG &gt;<span class="st"> </span><span class="dv">0</span>)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r">economicData &lt;-<span class="st"> </span><span class="kw">filter</span>(economicData, CROPDMG &gt;<span class="st"> </span><span class="dv">0</span> |<span class="st"> </span>PROPDMG &gt;<span class="st"> </span><span class="dv">0</span>)</code></pre>
 <p>Now manually clean up <code>EVTYPE</code>s that <em>obviously</em> belong together</p>
-<pre class="sourceCode r"><code class="sourceCode r">propertyData[<span class="kw">grep</span>(<span class="st">&#39;tstm.*wind|thunderstorm.*wind&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;THUNDERSTORM WIND&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;FLASH.*FLOOD&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;FLASH FLOOD&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;URBAN.*FLOOD|^FLOODING$|RIVER.*FLOOD&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;FLOOD&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;HURRICANE&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;HURRICANE&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;HIGH.*WIND|^WIND$STRONG.*WIND&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;HIGH WIND&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;WILD.*FIRE&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;WILDFIRE&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;WINTER.*WEATHER|LIGHT SNOW&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;WINTER WEATHER&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;FOG&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;DENSE FOG&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;COASTAL.*FLOOD&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;COASTAL FLOOD&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;HEAVY.*SURF&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;HIGH SURF&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;HEAVY.*RAIN&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;HEAVY RAIN&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;EXCESSIVE.*SNOW&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;HEAVY SNOW&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;EXTREME.*COLD&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;EXTREME COLD&#39;</span>
-propertyData[<span class="kw">grep</span>(<span class="st">&#39;STORM.*SURGE&#39;</span>, propertyData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;STORM SURGE/TIDE&#39;</span></code></pre>
-<p>Now approximately 98% of the data have been assigned to a proper category outlined in <a href="https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf">here</a> in section 2.1.1 &quot;Storm Data Event Table&quot;</p>
-<pre class="sourceCode r"><code class="sourceCode r">evCounts &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">table</span>(propertyData$EVTYPE))
+<pre class="sourceCode r"><code class="sourceCode r">economicData[<span class="kw">grep</span>(<span class="st">&#39;tstm.*wind|thunderstorm.*wind&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;THUNDERSTORM WIND&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;FLASH.*FLOOD&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;FLASH FLOOD&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;URBAN.*FLOOD|^FLOODING$|RIVER.*FLOOD&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;FLOOD&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;HURRICANE&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;HURRICANE&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;HIGH.*WIND|^WIND$|STRONG.*WIND&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;HIGH WIND&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;WILD.*FIRE&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;WILDFIRE&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;WINTER.*WEATHER|LIGHT SNOW&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;WINTER WEATHER&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;FOG&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;DENSE FOG&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;COASTAL.*FLOOD&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;COASTAL FLOOD&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;HEAVY.*SURF&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;HIGH SURF&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;HEAVY.*RAIN&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;HEAVY RAIN&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;EXCESSIVE.*SNOW&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;HEAVY SNOW&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;EXTREME.*COLD&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;EXTREME COLD&#39;</span>
+economicData[<span class="kw">grep</span>(<span class="st">&#39;STORM.*SURGE&#39;</span>, economicData$EVTYPE, <span class="dt">ignore.case =</span> T),]$EVTYPE &lt;-<span class="st"> &#39;STORM SURGE/TIDE&#39;</span></code></pre>
+<p>All events occuring more than 1000 times are now officially recognized event categories, as outlined <a href="https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf">here</a> in section 2.1.1 &quot;Storm Data Event Table&quot;. This is approximately 98% of all recorded events and will be considered a sufficient base for the rest of this analysis.</p>
+<pre class="sourceCode r"><code class="sourceCode r">evCounts &lt;-<span class="st"> </span><span class="kw">as.data.frame</span>(<span class="kw">table</span>(economicData$EVTYPE))
 evCounts &lt;-<span class="st"> </span><span class="kw">arrange</span>(evCounts, <span class="kw">desc</span>(Freq))
 eventsOccurringMoreThan1000Times &lt;-<span class="st"> </span><span class="kw">sum</span>(evCounts$Freq[evCounts$Freq &gt;<span class="st"> </span><span class="dv">1000</span>])
-eventsOccurringMoreThan1000Times/<span class="kw">nrow</span>(propertyData)</code></pre>
-<pre><code>## [1] 0.9765377</code></pre>
+eventsOccurringMoreThan1000Times/<span class="kw">nrow</span>(economicData)</code></pre>
+<pre><code>## [1] 0.9770764</code></pre>
 <p>Creating economic values from <code>CROPDMG</code>, <code>CROPDMGEXP</code>, <code>PROPDMG</code> and <code>PROPDMGEXP</code>:</p>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">levels</span>(propertyData$PROPDMGEXP)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">levels</span>(economicData$PROPDMGEXP)</code></pre>
 <pre><code>##  [1] &quot;&quot;  &quot;+&quot; &quot;-&quot; &quot;0&quot; &quot;1&quot; &quot;2&quot; &quot;3&quot; &quot;4&quot; &quot;5&quot; &quot;6&quot; &quot;7&quot; &quot;8&quot; &quot;?&quot; &quot;B&quot; &quot;H&quot; &quot;K&quot; &quot;M&quot;
 ## [18] &quot;h&quot; &quot;m&quot;</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">levels</span>(propertyData$CROPDMGEXP)</code></pre>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">levels</span>(economicData$CROPDMGEXP)</code></pre>
 <pre><code>## [1] &quot;&quot;  &quot;0&quot; &quot;2&quot; &quot;?&quot; &quot;B&quot; &quot;K&quot; &quot;M&quot; &quot;k&quot; &quot;m&quot;</code></pre>
 <p>How to interpret the factor levels was done with the complementary <a href="https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf">NOAA document</a> and the help of <a href="https://rstudio-pubs-static.s3.amazonaws.com/58957_37b6723ee52b455990e149edde45e5b6.html">this site</a> where we see how the factor levels not addressed in the NOAA document can be interpreted. Basically values with numbers 1-8 are multipliers of ten (i.e a value of 1 multiplies the value in the corresponding DMG column by 10, just like a value of 3, or 4, or etc.). The value <code>+</code> multiplies by 1 and the values <code>-</code> and <code>?</code> multiply by 0.</p>
 <pre class="sourceCode r"><code class="sourceCode r">multiplierFor &lt;-<span class="st"> </span>function(type){
@@ -79,11 +79,9 @@ eventsOccurringMoreThan1000Times/<span class="kw">nrow</span>(propertyData)</cod
            <span class="dv">0</span>)
 }
 
-propertyData &lt;-<span class="st"> </span>propertyData %&gt;%<span class="st"> </span><span class="kw">rowwise</span>() %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">monetaryDamage =</span> PROPDMG*<span class="kw">multiplierFor</span>(PROPDMGEXP) +<span class="st"> </span>CROPDMG*<span class="kw">multiplierFor</span>(CROPDMGEXP))</code></pre>
-<pre><code>## Error in eval(expr, envir, enclos): object &#39;propertyData&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r">aggregatedDamages &lt;-<span class="st"> </span><span class="kw">aggregate</span>(propertyData$monetaryDamage, <span class="kw">list</span>(propertyData$EVTYPE), sum)</code></pre>
-<pre><code>## Error in aggregate(propertyData$monetaryDamage, list(propertyData$EVTYPE), : object &#39;propertyData&#39; not found</code></pre>
-<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">colnames</span>(aggregatedDamages) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;EVTYPE&#39;</span>, <span class="st">&#39;monetaryValue&#39;</span>)
+economicData &lt;-<span class="st"> </span>economicData %&gt;%<span class="st"> </span><span class="kw">rowwise</span>() %&gt;%<span class="st"> </span><span class="kw">mutate</span>(<span class="dt">monetaryDamage =</span> PROPDMG*<span class="kw">multiplierFor</span>(PROPDMGEXP) +<span class="st"> </span>CROPDMG*<span class="kw">multiplierFor</span>(CROPDMGEXP))
+aggregatedDamages &lt;-<span class="st"> </span><span class="kw">aggregate</span>(economicData$monetaryDamage, <span class="kw">list</span>(economicData$EVTYPE), sum)
+<span class="kw">colnames</span>(aggregatedDamages) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;EVTYPE&#39;</span>, <span class="st">&#39;monetaryValue&#39;</span>)
 aggregatedDamages &lt;-<span class="st"> </span><span class="kw">arrange</span>(aggregatedDamages, <span class="kw">desc</span>(monetaryValue))</code></pre>
 <h2 id="results">Results</h2>
 <h2 id="section"></h2>
