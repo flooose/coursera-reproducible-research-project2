@@ -145,15 +145,15 @@ levels(economicData$CROPDMGEXP)
 ## [1] ""  "0" "2" "?" "B" "K" "M" "k" "m"
 ```
 
-How to interpret the factor levels was done with the complementary
+Interpreting the factor levels was done with the help section 2.7 of
+the complementary
 [NOAA document](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
-and the help of
-[this site](https://rstudio-pubs-static.s3.amazonaws.com/58957_37b6723ee52b455990e149edde45e5b6.html)
+as well as [this site](https://rstudio-pubs-static.s3.amazonaws.com/58957_37b6723ee52b455990e149edde45e5b6.html)
 where we see how the factor levels not addressed in the NOAA document
-can be interpreted. Basically values with numbers 1-8 are multipliers of ten
-(i.e a value of 1 multiplies the value in the corresponding DMG column
-by 10, just like a value of 3, or 4, or etc.). The value `+` multiplies
-by 1 and the values `-` and `?` multiply by 0.
+can be interpreted. Basically values with numbers 1-8 are multipliers
+of 10 (i.e a value of 1 multiplies the value in the corresponding DMG
+column by 10, just like a value of 3, or 4, or etc.). The value `+`
+multiplies by 1 and the values `-` and `?` multiply by 0.
 
 
 ```r
