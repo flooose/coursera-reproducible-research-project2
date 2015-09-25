@@ -1,11 +1,9 @@
 ---
-title: "Storm Analysis"
+title: "NOAA Severe Weather Analysis"
 output:
   html_document:
     keep_md: true
 ---
-
-# NOAA Severe Weather Analysis
 
 ## Synopsis
 
@@ -38,7 +36,7 @@ populationImpact <- select(weatherData, FATALITIES, INJURIES)
 populationImpact$combinedDeathsAndInjuries <- populationImpact$FATALITIES + populationImpact$INJURIES
 ```
 
-Now we can aggregate the by event type:
+Now we can aggregate them by event type:
 
 ```{r}
 deathsAndInjuries <- aggregate(populationImpact, by=list(eventType = weatherData$EVTYPE), sum, na.rm = T)
@@ -70,9 +68,9 @@ We only keep rows where `CROPDMG > 0` or `PROPDMG > 0`
 economicData <- filter(economicData, CROPDMG > 0 | PROPDMG > 0)
 ```
 
-Now manually merge (to the extent possible) `EVTYPE`s that are not
-listed
-[here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
+Now we manually merge (to the extent possible) `EVTYPE`s that are not
+listed in section 2.1.1 of the
+[NOAA Guide](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
 with good matches that are.
 
 ```{r}
@@ -106,12 +104,7 @@ eventsOccurringMoreThan1000Times/nrow(economicData)
 
 Creating economic values from `CROPDMG`, `CROPDMGEXP`, `PROPDMG` and `PROPDMGEXP`:
 
-```{r}
-levels(economicData$PROPDMGEXP)
-levels(economicData$CROPDMGEXP)
-```
-
-Interpreting the factor levels was done with the help section 2.7 of
+Interpreting the factor levels was done with the help of section 2.7 of
 the complementary
 [NOAA document](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
 as well as [this site](https://rstudio-pubs-static.s3.amazonaws.com/58957_37b6723ee52b455990e149edde45e5b6.html)
@@ -120,6 +113,14 @@ can be interpreted. Basically values with numbers 1-8 are multipliers
 of 10 (i.e a value of 1 multiplies the value in the corresponding DMG
 column by 10, just like a value of 3, or 4, or etc.). The value `+`
 multiplies by 1 and the values `-` and `?` multiply by 0.
+
+```{r}
+levels(economicData$PROPDMGEXP)
+levels(economicData$CROPDMGEXP)
+```
+
+Now we use the following helper function to interpret these
+factors. Subsequently we aggregate the monetary damage by event type.
 
 ```{r, cache=T}
 multiplierFor <- function(type){
@@ -149,7 +150,10 @@ economicData <- economicData %>% rowwise() %>% mutate(monetaryDamage = PROPDMG*m
 aggregatedDamages <- aggregate(economicData$monetaryDamage, list(economicData$EVTYPE), sum)
 colnames(aggregatedDamages) <- c('EVTYPE', 'monetaryValue')
 aggregatedDamages <- arrange(aggregatedDamages, desc(monetaryValue))
+head(aggregatedDamages)
 ```
+
+Here we see that flooding produces the highest cost in damages in the dataset.
 
 ## Results
 

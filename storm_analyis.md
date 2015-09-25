@@ -1,10 +1,3 @@
----
-title: "Storm Analysis"
-output:
-  html_document:
-    keep_md: true
----
-
 # NOAA Severe Weather Analysis
 
 ## Synopsis
@@ -21,6 +14,19 @@ Setup:
 
 ```r
 library(dplyr)
+```
+
+```
+## 
+## Attaching package: 'dplyr'
+## 
+## The following objects are masked from 'package:stats':
+## 
+##     filter, lag
+## 
+## The following objects are masked from 'package:base':
+## 
+##     intersect, setdiff, setequal, union
 ```
 
 Loading the data:
@@ -41,7 +47,7 @@ populationImpact <- select(weatherData, FATALITIES, INJURIES)
 populationImpact$combinedDeathsAndInjuries <- populationImpact$FATALITIES + populationImpact$INJURIES
 ```
 
-Now we can aggregate the by event type:
+Now we can aggregate them by event type:
 
 
 ```r
@@ -86,9 +92,9 @@ We only keep rows where `CROPDMG > 0` or `PROPDMG > 0`
 economicData <- filter(economicData, CROPDMG > 0 | PROPDMG > 0)
 ```
 
-Now manually merge (to the extent possible) `EVTYPE`s that are not
-listed
-[here](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
+Now we manually merge (to the extent possible) `EVTYPE`s that are not
+listed in section 2.1.1 of the
+[NOAA Guide](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
 with good matches that are.
 
 
@@ -128,6 +134,16 @@ eventsOccurringMoreThan1000Times/nrow(economicData)
 
 Creating economic values from `CROPDMG`, `CROPDMGEXP`, `PROPDMG` and `PROPDMGEXP`:
 
+Interpreting the factor levels was done with the help of section 2.7 of
+the complementary
+[NOAA document](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
+as well as [this site](https://rstudio-pubs-static.s3.amazonaws.com/58957_37b6723ee52b455990e149edde45e5b6.html)
+where we see how the factor levels not addressed in the NOAA document
+can be interpreted. Basically values with numbers 1-8 are multipliers
+of 10 (i.e a value of 1 multiplies the value in the corresponding DMG
+column by 10, just like a value of 3, or 4, or etc.). The value `+`
+multiplies by 1 and the values `-` and `?` multiply by 0.
+
 
 ```r
 levels(economicData$PROPDMGEXP)
@@ -146,15 +162,8 @@ levels(economicData$CROPDMGEXP)
 ## [1] ""  "0" "2" "?" "B" "K" "M" "k" "m"
 ```
 
-Interpreting the factor levels was done with the help section 2.7 of
-the complementary
-[NOAA document](https://d396qusza40orc.cloudfront.net/repdata%2Fpeer2_doc%2Fpd01016005curr.pdf)
-as well as [this site](https://rstudio-pubs-static.s3.amazonaws.com/58957_37b6723ee52b455990e149edde45e5b6.html)
-where we see how the factor levels not addressed in the NOAA document
-can be interpreted. Basically values with numbers 1-8 are multipliers
-of 10 (i.e a value of 1 multiplies the value in the corresponding DMG
-column by 10, just like a value of 3, or 4, or etc.). The value `+`
-multiplies by 1 and the values `-` and `?` multiply by 0.
+Now we use the following helper function to interpret these
+factors. Subsequently we aggregate the monetary damage by event type.
 
 
 ```r
@@ -185,7 +194,20 @@ economicData <- economicData %>% rowwise() %>% mutate(monetaryDamage = PROPDMG*m
 aggregatedDamages <- aggregate(economicData$monetaryDamage, list(economicData$EVTYPE), sum)
 colnames(aggregatedDamages) <- c('EVTYPE', 'monetaryValue')
 aggregatedDamages <- arrange(aggregatedDamages, desc(monetaryValue))
+head(aggregatedDamages)
 ```
+
+```
+##             EVTYPE monetaryValue
+## 1            FLOOD  160756453460
+## 2        HURRICANE   90271472810
+## 3          TORNADO   57352117607
+## 4 STORM SURGE/TIDE   47965579000
+## 5             HAIL   18758224527
+## 6      FLASH FLOOD   18439123353
+```
+
+Here we see that flooding produces the highest cost in damages in the dataset.
 
 ## Results
 
@@ -199,17 +221,18 @@ g + geom_bar(stat='identity') +
     labs(title = "Top Twenty Events Causing Death or Injury", x = "Event Type", y = "Combined Deaths and Injuries")
 ```
 
-![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
+![](storm_analyis_files/figure-html/unnamed-chunk-11-1.png) 
+
+Here we can see that tornadoes are by a large margin the most significant weather source causing death and injuries.
 
 
 ```r
-#g <- ggplot(aggregatedDamages[c(1:20),], aes(monetaryValue,EVTYPE,group=1))
 g <- ggplot(aggregatedDamages[c(1:20),], aes(EVTYPE, monetaryValue, group=1))
 g + geom_bar(stat='identity') +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     labs(title = "Top Twenty Events Causing Economic Damage", x = "Event Type", y = "Monetary Value")
 ```
 
-![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png) 
+![](storm_analyis_files/figure-html/unnamed-chunk-12-1.png) 
 
-##
+In this table we see that flooding followed by hurricane damage are the most costly economic weather factors.
