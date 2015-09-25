@@ -162,12 +162,13 @@ g + geom_bar(stat='identity') +
     labs(title = "Top Twenty Events Causing Death or Injury", x = "Event Type", y = "Combined Deaths and Injuries")
 ```
 
+Here we can see that tornadoes are by a large margin the most significant weather source causing death and injuries.
+
 ```{r}
-#g <- ggplot(aggregatedDamages[c(1:20),], aes(monetaryValue,EVTYPE,group=1))
 g <- ggplot(aggregatedDamages[c(1:20),], aes(EVTYPE, monetaryValue, group=1))
 g + geom_bar(stat='identity') +
     theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
     labs(title = "Top Twenty Events Causing Economic Damage", x = "Event Type", y = "Monetary Value")
 ```
 
-##
+In this table we see that flooding followed by hurricane damage are the most costly economic weather factors.
