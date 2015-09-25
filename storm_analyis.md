@@ -189,4 +189,27 @@ aggregatedDamages <- arrange(aggregatedDamages, desc(monetaryValue))
 
 ## Results
 
+
+```r
+library(ggplot2)
+g <- ggplot(deathsAndInjuries[c(1:20),],
+            aes(eventType, combinedDeathsAndInjuries, group=1))
+g + geom_bar(stat='identity') +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(title = "Top Twenty Events Causing Death or Injury", x = "Event Type", y = "Combined Deaths and Injuries")
+```
+
+![plot of chunk unnamed-chunk-11](figure/unnamed-chunk-11-1.png) 
+
+
+```r
+#g <- ggplot(aggregatedDamages[c(1:20),], aes(monetaryValue,EVTYPE,group=1))
+g <- ggplot(aggregatedDamages[c(1:20),], aes(EVTYPE, monetaryValue, group=1))
+g + geom_bar(stat='identity') +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(title = "Top Twenty Events Causing Economic Damage", x = "Event Type", y = "Monetary Value")
+```
+
+![plot of chunk unnamed-chunk-12](figure/unnamed-chunk-12-1.png) 
+
 ##

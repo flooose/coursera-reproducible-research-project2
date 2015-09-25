@@ -154,10 +154,20 @@ aggregatedDamages <- arrange(aggregatedDamages, desc(monetaryValue))
 ## Results
 
 ```{r}
+library(ggplot2)
+g <- ggplot(deathsAndInjuries[c(1:20),],
+            aes(eventType, combinedDeathsAndInjuries, group=1))
+g + geom_bar(stat='identity') +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(title = "Top Twenty Events Causing Death or Injury", x = "Event Type", y = "Combined Deaths and Injuries")
+```
+
+```{r}
 #g <- ggplot(aggregatedDamages[c(1:20),], aes(monetaryValue,EVTYPE,group=1))
-g <- ggplot(aggregatedDamages[c(1:29),], aes(EVTYPE, monetaryValue,group=1))
-g + theme(axis.text.x = element_text(angle = 45, hjust = 1))
-g + geom_point()
+g <- ggplot(aggregatedDamages[c(1:20),], aes(EVTYPE, monetaryValue, group=1))
+g + geom_bar(stat='identity') +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+    labs(title = "Top Twenty Events Causing Economic Damage", x = "Event Type", y = "Monetary Value")
 ```
 
 ##

@@ -84,4 +84,21 @@ aggregatedDamages &lt;-<span class="st"> </span><span class="kw">aggregate</span
 <span class="kw">colnames</span>(aggregatedDamages) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&#39;EVTYPE&#39;</span>, <span class="st">&#39;monetaryValue&#39;</span>)
 aggregatedDamages &lt;-<span class="st"> </span><span class="kw">arrange</span>(aggregatedDamages, <span class="kw">desc</span>(monetaryValue))</code></pre>
 <h2 id="results">Results</h2>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(ggplot2)
+g &lt;-<span class="st"> </span><span class="kw">ggplot</span>(deathsAndInjuries[<span class="kw">c</span>(<span class="dv">1</span>:<span class="dv">20</span>),],
+            <span class="kw">aes</span>(eventType, combinedDeathsAndInjuries, <span class="dt">group=</span><span class="dv">1</span>))
+g +<span class="st"> </span><span class="kw">geom_bar</span>(<span class="dt">stat=</span><span class="st">&#39;identity&#39;</span>) +
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">45</span>, <span class="dt">hjust =</span> <span class="dv">1</span>)) +
+<span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Top Twenty Events Causing Death or Injury&quot;</span>, <span class="dt">x =</span> <span class="st">&quot;Event Type&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Combined Deaths and Injuries&quot;</span>)</code></pre>
+<figure>
+<img src="figure/unnamed-chunk-11-1.png" alt="plot of chunk unnamed-chunk-11" /><figcaption>plot of chunk unnamed-chunk-11</figcaption>
+</figure>
+<pre class="sourceCode r"><code class="sourceCode r"><span class="co">#g &lt;- ggplot(aggregatedDamages[c(1:20),], aes(monetaryValue,EVTYPE,group=1))</span>
+g &lt;-<span class="st"> </span><span class="kw">ggplot</span>(aggregatedDamages[<span class="kw">c</span>(<span class="dv">1</span>:<span class="dv">20</span>),], <span class="kw">aes</span>(EVTYPE, monetaryValue, <span class="dt">group=</span><span class="dv">1</span>))
+g +<span class="st"> </span><span class="kw">geom_bar</span>(<span class="dt">stat=</span><span class="st">&#39;identity&#39;</span>) +
+<span class="st">    </span><span class="kw">theme</span>(<span class="dt">axis.text.x =</span> <span class="kw">element_text</span>(<span class="dt">angle =</span> <span class="dv">45</span>, <span class="dt">hjust =</span> <span class="dv">1</span>)) +
+<span class="st">    </span><span class="kw">labs</span>(<span class="dt">title =</span> <span class="st">&quot;Top Twenty Events Causing Economic Damage&quot;</span>, <span class="dt">x =</span> <span class="st">&quot;Event Type&quot;</span>, <span class="dt">y =</span> <span class="st">&quot;Monetary Value&quot;</span>)</code></pre>
+<figure>
+<img src="figure/unnamed-chunk-12-1.png" alt="plot of chunk unnamed-chunk-12" /><figcaption>plot of chunk unnamed-chunk-12</figcaption>
+</figure>
 <h2 id="section"></h2>
